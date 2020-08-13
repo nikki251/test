@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:workday="http://www.mulesoft.org/schema/mule/workday"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/workday http://www.mulesoft.org/schema/mule/workday/current/mule-workday.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9e447679-edb0-4fc9-a640-90c0d2c9125b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<workday:config-version-34-config name="Workday_Config_version_34" doc:name="Workday Config version 34" doc:id="9bbc52ea-f4a0-42ef-ae4f-fd24bcaaad72" >
+		<workday:basic-authentication-api-v34-connection userName="${WD.id}" password="${WD.pass}" tenantName="${WD.tenant}" hostName="${WD.host}" />
+	</workday:config-version-34-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="864fca14-3d17-4fb4-a9aa-0771def1dbac" file="config.yaml" />
+	<flow name="testFlow" doc:id="d2e6c0da-49e9-462b-bfcc-82c43f940841" >
+		<http:listener doc:name="Listener" doc:id="858a52ba-c155-4cf6-a073-b671a2a8526c" config-ref="HTTP_Listener_config" path="test"/>
+		<workday:human-resources operation="Get_Workers" doc:name="Human resources" doc:id="dbe306d3-9218-4e72-8215-6edf8424e81d" config-ref="Workday_Config_version_34">
+			<workday:content ><![CDATA[<bsvc:Get_Workers_Request xmlns:bsvc="urn:com.workday/bsvc">
+<bsvc:Request_References>
+<bsvc:Worker_Reference>
+<bsvc:ID bsvc:type="Employee_ID">00001</bsvc:ID>
+</bsvc:Worker_Reference>
+</bsvc:Request_References>
+</bsvc:Get_Workers_Request>]]></workday:content>
+		</workday:human-resources>
+		<ee:transform doc:name="Transform Message" doc:id="02bade07-ab55-4252-94a8-58f80150f741" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
